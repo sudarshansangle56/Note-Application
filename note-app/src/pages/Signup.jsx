@@ -1,78 +1,89 @@
-import React, { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import Logo from "../Components/Logo"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Logo from "../Components/Logo";
 
 function Signup() {
-  const [showOtp, setShowOtp] = useState(false)
-  const [form, setForm] = useState({ name: "", dob: "", email: "", otp: "" })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  const [showOtp, setShowOtp] = useState(false);
+  const [form, setForm] = useState({ name: "", dob: "", email: "", otp: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const API = import.meta.env.VITE_API_URL; // 👈 match .env
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.id]: e.target.value })
-  }
+    setForm({ ...form, [e.target.id]: e.target.value });
+  };
 
   const getOtp = async () => {
     if (!form.email) {
-      setError("Email is required")
-      return
+      setError("Email is required");
+      return;
     }
-    setError("")
-    setLoading(true)
+    setError("");
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/auth/request-otp", {
+      const res = await fetch(`${API}/auth/request-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email })
-      })
-      const data = await res.json()
+        body: JSON.stringify({ email: form.email }),
+      });
+      const data = await res.json();
       if (res.ok) {
-        setShowOtp(true)
+        setShowOtp(true);
+
+        // 👇 show OTP in alert box directly
+        if (data.otp) {
+          alert(`Your OTP is: ${data.otp}`);
+        }
       } else {
-        setError(data.message || "Failed to send OTP")
+        setError(data.message || "Failed to send OTP");
       }
     } catch (err) {
-      setError("Server error")
-      console.log(err)
+      setError("Server error");
+      console.log(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const verifyOtp = async () => {
     if (!form.otp) {
-      setError("Enter OTP")
-      return
+      setError("Enter OTP");
+      return;
     }
-    setError("")
-    setLoading(true)
+    setError("");
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/auth/verify-otp", {
+      const res = await fetch(`${API}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, otp: form.otp })
-      })
-      const data = await res.json()
+        body: JSON.stringify({ email: form.email, otp: form.otp }),
+      });
+      const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token)
-        localStorage.setItem("user", JSON.stringify(data.user))
-        navigate("/dashboard")
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dash");
       } else {
-        setError(data.message || "Invalid OTP")
+        setError(data.message || "Invalid OTP");
       }
     } catch (err) {
-      setError("Server error")
-      console.log(err)
+      setError("Server error");
+      console.log(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center h-[680px] bg-white px-3 gap-5">
-      <div className="w-[40%] p-4 sm:px-[7%]">
+      <div className="sm:w-[40%] w-[95%] p-4 sm:px-[7%]">
+      
+
         <h2 className="text-2xl font-bold sm:text-start text-center mb-2">
+        <Logo />
+
           Sign up
         </h2>
         <p className="text-gray-500 sm:text-start text-center mb-6">
@@ -85,7 +96,7 @@ function Signup() {
             id="name"
             value={form.name}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg peer focus:outline-none focus:ring-1 focus:ring-blue-400"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             placeholder=" "
           />
           <label
@@ -102,7 +113,7 @@ function Signup() {
             id="dob"
             value={form.dob}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg peer focus:outline-none focus:ring-1 focus:ring-blue-400"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             placeholder=" "
           />
           <label
@@ -113,13 +124,14 @@ function Signup() {
           </label>
         </div>
 
+        {/* Email */}
         <div className="relative mt-9">
           <input
             type="text"
             id="email"
             value={form.email}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg peer focus:outline-none focus:ring-1 focus:ring-blue-400"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg"
             placeholder=" "
           />
           <label
@@ -137,7 +149,7 @@ function Signup() {
               id="otp"
               value={form.otp}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg peer focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
               placeholder=" "
             />
             <label
@@ -168,7 +180,6 @@ function Signup() {
             {loading ? "Verifying..." : "Verify OTP"}
           </button>
         )}
-
         <h1 className="mt-3 text-center text-gray-500">
           Already have an account??{" "}
           <a className="text-[#335db9]" href="/login">
@@ -178,14 +189,10 @@ function Signup() {
       </div>
 
       <div className="sm:w-[60%] hidden sm:block">
-        <img
-          className="rounded-2xl w-full h-[670px]"
-          src="/blue.png"
-          alt=""
-        />
+        <img className="rounded-2xl w-full h-[670px]" src="/blue.png" alt="" />
       </div>
     </div>
-  )
+  );
 }
 
-export default Signup
+export default Signup;

@@ -2,20 +2,18 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const jwt = require("jsonwebtoken")
-const { OAuth2Client } = require("google-auth-library")
 
 const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
 const SECRET = "mysecret"
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-const client = new OAuth2Client(GOOGLE_CLIENT_ID)
 
 let users = []
 let otps = {}
 let notes = []
 
+// Middleware: JWT Authentication
 function auth(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1]
   if (!token) return res.status(401).json({ message: "No token" })
@@ -28,49 +26,37 @@ function auth(req, res, next) {
   }
 }
 
-// request OTP
+// Request OTP
 app.post("/auth/request-otp", (req, res) => {
   const { email } = req.body
+  if (!email) return res.status(400).json({ message: "Email required" })
+
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   otps[email] = otp
-  console.log("OTP for", email, "=", otp) 
-  res.json({ message: "OTP sent" })
+  console.log("OTP for", email, "=", otp) // still logs for debugging
+
+  // 👇 send OTP in response (for demo only!)
+  res.json({ message: "OTP generated", otp })
 })
 
-
+// Verify OTP
 app.post("/auth/verify-otp", (req, res) => {
   const { email, otp } = req.body
   if (otps[email] !== otp) return res.status(401).json({ message: "Invalid OTP" })
+
   let user = users.find(u => u.email === email)
   if (!user) {
     user = { id: Date.now(), name: email.split("@")[0], email }
     users.push(user)
   }
+
   delete otps[email]
+
   const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: "1h" })
   res.json({ token, user })
 })
 
-app.post("/auth/google", async (req, res) => {
-  const { token } = req.body
-  try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: GOOGLE_CLIENT_ID
-    })
-    const payload = ticket.getPayload()
-    let user = users.find(u => u.email === payload.email)
-    if (!user) {
-      user = { id: Date.now(), name: payload.name, email: payload.email }
-      users.push(user)
-    }
-    const jwtToken = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: "1h" })
-    res.json({ token: jwtToken, user })
-  } catch (err) {
-    res.status(401).json({ message: "Invalid Google token" })
-  }
-})
-
+// Notes routes
 app.get("/notes", auth, (req, res) => {
   res.json(notes.filter(n => n.userId === req.user.id))
 })
@@ -93,8 +79,5 @@ app.delete("/notes/:id", auth, (req, res) => {
   res.json({ success: true })
 })
 
-const port = process.env.PORT || 5000;
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+const port = process.env.PORT || 5000
+app.listen(port, () => console.log(`Server running on port ${port}`))

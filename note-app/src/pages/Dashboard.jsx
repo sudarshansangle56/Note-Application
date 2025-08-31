@@ -6,9 +6,10 @@ function Dashboard() {
   const [user, setUser] = useState(null)
   const [notes, setNotes] = useState([])
   const [loading, setLoading] = useState(true)
-  const [newNote, setNewNote] = useState("") // input box state
+  const [newNote, setNewNote] = useState("") 
 
   const token = localStorage.getItem("token")
+  const API = import.meta.env.VITE_API_URL 
 
   useEffect(() => {
     const fetchUser = () => {
@@ -19,7 +20,7 @@ function Dashboard() {
 
     const fetchNotes = async () => {
       try {
-        const res = await fetch("http://localhost:5000/notes", {
+        const res = await fetch(`${API}/notes`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         const data = await res.json()
@@ -31,12 +32,12 @@ function Dashboard() {
       }
     }
     if (token) fetchNotes()
-  }, [token])
+  }, [token, API])
 
   const createNote = async () => {
     if (!newNote.trim()) return
     try {
-      const res = await fetch("http://localhost:5000/notes", {
+      const res = await fetch(`${API}/notes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +55,7 @@ function Dashboard() {
 
   const deleteNote = async (id) => {
     try {
-      await fetch(`http://localhost:5000/notes/${id}`, {
+      await fetch(`${API}/notes/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -84,7 +85,6 @@ function Dashboard() {
         </div>
       )}
 
-      {/* input field to create note */}
       <div className="mt-6 flex gap-2 max-w-lg">
         <input
           type="text"

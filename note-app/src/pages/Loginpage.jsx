@@ -1,87 +1,97 @@
-import React, { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Logo from "../Components/Logo";
 
 function Loginpage() {
-  const [showOtp, setShowOtp] = useState(false)
-  const [form, setForm] = useState({ email: "", otp: "" })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  const [showOtpField, setShowOtpField] = useState(false);
+  const [showOtpText, setShowOtpText] = useState(false);
+  const [form, setForm] = useState({ email: "", otp: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [popupOtp, setPopupOtp] = useState("");
+  const navigate = useNavigate();
 
+  const API = import.meta.env.VITE_API_URL;
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.id]: e.target.value })
-  }
+    setForm({ ...form, [e.target.id]: e.target.value });
+  };
 
   // Request OTP
   const getOtp = async () => {
     if (!form.email) {
-      setError("Email is required")
-      return
+      setError("Email is required");
+      return;
     }
-    setError("")
-    setLoading(true)
+    setError("");
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/auth/request-otp", {
+      const res = await fetch(`${API}/auth/request-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (res.ok) {
-        alert("OTP sent! (check backend console if using test)")
+        setShowOtpField(true);
+        if (data.otp) {
+          setPopupOtp(data.otp);
+        } else {
+          setPopupOtp("Check backend console for OTP");
+        }
       } else {
-        setError(data.message || "Failed to send OTP")
+        setError(data.message || "Failed to send OTP");
       }
     } catch (err) {
-      setError("Server error")
-      console.log(err)
+      setError("Server error");
+      console.log(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  // Verify OTP
   const verifyOtp = async () => {
     if (!form.otp) {
-      setError("Enter OTP")
-      return
+      setError("Enter OTP");
+      return;
     }
-    setError("")
-    setLoading(true)
+    setError("");
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/auth/verify-otp", {
+      const res = await fetch(`${API}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, otp: form.otp }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token)
-        localStorage.setItem("user", JSON.stringify(data.user))
-        navigate("/dash")
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dash");
       } else {
-        setError(data.message || "Invalid OTP")
+        setError(data.message || "Invalid OTP");
       }
     } catch (err) {
-      setError("Server error")
-      console.log(err)
+      setError("Server error");
+      console.log(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center h-[680px] bg-white px-3 gap-5">
-      <div className="w-[40%] p-4 sm:px-[7%]">
+     
+
+      <div className="sm:w-[40%] p-4 sm:px-[7%]">
         <h2 className="text-2xl font-bold sm:text-start text-center mb-2">
+        <Logo />
           Sign In
         </h2>
         <p className="text-gray-500 sm:text-start text-center mb-6">
           Please login to continue to your account.
         </p>
 
-        {/* Email */}
         <div className="relative mt-9">
           <input
             type="text"
@@ -99,50 +109,62 @@ function Loginpage() {
           </label>
         </div>
 
-        {/* OTP */}
-        <div className="relative mt-9">
-          <input
-            type={showOtp ? "text" : "password"}
-            id="otp"
-            value={form.otp}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg peer focus:outline-none focus:ring-1 focus:ring-blue-400 pr-10"
-            placeholder=" "
-          />
-          <label
-            htmlFor="otp"
-            className="absolute -top-2 left-3 bg-white px-1 text-sm text-gray-500"
-          >
-            OTP
-          </label>
-          <button
-            type="button"
-            onClick={() => setShowOtp(!showOtp)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-          >
-            {showOtp ? <EyeOff size={20} /> : <Eye size={20} />}
-          </button>
-        </div>
+        {showOtpField && (
+          <div className="relative mt-9">
+            <input
+              type={showOtpText ? "text" : "password"}
+              id="otp"
+              value={form.otp}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg peer focus:outline-none focus:ring-1 focus:ring-blue-400 pr-10"
+              placeholder=" "
+            />
+            <label
+              htmlFor="otp"
+              className="absolute -top-2 left-3 bg-white px-1 text-sm text-gray-500"
+            >
+              OTP
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowOtpText(!showOtpText)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              {showOtpText ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+        )}
 
-        {/* Error */}
         {error && <p className="text-red-500 mt-2">{error}</p>}
+
+        {popupOtp && showOtpField && (
+          <div className="mt-4 p-3 border rounded-lg bg-yellow-100 text-center">
+            <p className="text-gray-700 font-semibold">
+              Your OTP:{" "}
+              <span className="font-bold text-red-600">{popupOtp}</span>
+            </p>
+          </div>
+        )}
 
         {/* Buttons */}
         <div className="mt-5 flex flex-col gap-3">
-          <button
-            onClick={getOtp}
-            disabled={loading}
-            className="w-[95%] h-[50px] rounded-lg text-white bg-blue-700"
-          >
-            {loading ? "Sending..." : "Get OTP"}
-          </button>
-          <button
-            onClick={verifyOtp}
-            disabled={loading}
-            className="w-[95%] h-[50px] rounded-lg text-white bg-green-700"
-          >
-            {loading ? "Verifying..." : "Sign in"}
-          </button>
+          {!showOtpField ? (
+            <button
+              onClick={getOtp}
+              disabled={loading}
+              className="w-[95%] h-[50px] rounded-lg text-white bg-blue-700"
+            >
+              {loading ? "Sending..." : "Get OTP"}
+            </button>
+          ) : (
+            <button
+              onClick={verifyOtp}
+              disabled={loading}
+              className="w-[95%] h-[50px] rounded-lg text-white bg-green-700"
+            >
+              {loading ? "Verifying..." : "Sign in"}
+            </button>
+          )}
         </div>
 
         <h1 className="mt-3 text-center text-gray-500">
@@ -161,7 +183,7 @@ function Loginpage() {
         />
       </div>
     </div>
-  )
+  );
 }
 
-export default Loginpage
+export default Loginpage;
