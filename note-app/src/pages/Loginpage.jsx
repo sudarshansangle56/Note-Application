@@ -58,7 +58,7 @@ function Loginpage() {
       if (res.ok) {
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
-        navigate("/")
+        navigate("/dash")
       } else {
         setError(data.message || "Invalid OTP")
       }
