@@ -33,11 +33,11 @@ app.post("/auth/request-otp", (req, res) => {
   const { email } = req.body
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   otps[email] = otp
-  console.log("OTP for", email, "=", otp) // send via email in real app
+  console.log("OTP for", email, "=", otp) 
   res.json({ message: "OTP sent" })
 })
 
-// verify OTP
+
 app.post("/auth/verify-otp", (req, res) => {
   const { email, otp } = req.body
   if (otps[email] !== otp) return res.status(401).json({ message: "Invalid OTP" })
@@ -51,7 +51,6 @@ app.post("/auth/verify-otp", (req, res) => {
   res.json({ token, user })
 })
 
-// google login
 app.post("/auth/google", async (req, res) => {
   const { token } = req.body
   try {
@@ -72,7 +71,6 @@ app.post("/auth/google", async (req, res) => {
   }
 })
 
-// notes crud
 app.get("/notes", auth, (req, res) => {
   res.json(notes.filter(n => n.userId === req.user.id))
 })
@@ -95,6 +93,8 @@ app.delete("/notes/:id", auth, (req, res) => {
   res.json({ success: true })
 })
 
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000")
-})
+const port = process.env.PORT || 5000;
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
