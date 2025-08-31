@@ -35,6 +35,7 @@ function Loginpage() {
       }
     } catch (err) {
       setError("Server error")
+      console.log(err)
     } finally {
       setLoading(false)
     }
@@ -64,6 +65,7 @@ function Loginpage() {
       }
     } catch (err) {
       setError("Server error")
+      console.log(err)
     } finally {
       setLoading(false)
     }
@@ -145,7 +147,7 @@ function Loginpage() {
 
         <h1 className="mt-3 text-center text-gray-500">
           Need an account??{" "}
-          <a className="text-[#335db9]" href="/signup">
+          <a className="text-[#335db9]" href="/">
             Create one
           </a>
         </h1>

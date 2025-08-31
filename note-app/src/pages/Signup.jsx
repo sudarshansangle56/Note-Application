@@ -34,6 +34,7 @@ function Signup() {
       }
     } catch (err) {
       setError("Server error")
+      console.log(err)
     } finally {
       setLoading(false)
     }
@@ -62,6 +63,7 @@ function Signup() {
       }
     } catch (err) {
       setError("Server error")
+      console.log(err)
     } finally {
       setLoading(false)
     }
